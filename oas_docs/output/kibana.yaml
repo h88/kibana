@@ -69425,7 +69425,7 @@ paths:
 
         Refer to [Spaces](https://www.elastic.co/docs/deploy-manage/manage-spaces) for more information.
 
-        Resume a paused waitForApproval step using an external resume API key. Returns an HTML confirmation page.
+        Resume a paused waitForApproval step (approved query param) or waitForInput step (schema fields as query params). Returns an HTML confirmation page.
       operationId: get-workflows-executions-executionid-resume-external
       parameters:
         - description: Workflow execution ID
@@ -69440,10 +69440,10 @@ paths:
           required: true
           schema:
             type: string
-        - description: Whether the external actor approved the workflow pause.
+        - description: Required for waitForApproval. Whether the external actor approved the workflow pause.
           in: query
           name: approved
-          required: true
+          required: false
           schema:
             anyOf:
               - type: boolean
@@ -69464,7 +69464,7 @@ paths:
               schema:
                 type: string
           description: HTML confirmation page when the workflow response was accepted
-      summary: Resume a workflow execution from an external approval link
+      summary: Resume a workflow execution from an external link
       tags:
         - workflows
       x-codeSamples:
