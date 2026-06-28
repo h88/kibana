@@ -69425,7 +69425,7 @@ paths:
 
         Refer to [Spaces](https://www.elastic.co/docs/deploy-manage/manage-spaces) for more information.
 
-        Resume a paused workflow execution using an external resume API key. Returns an HTML confirmation page.
+        Resume a paused waitForApproval step using an external resume API key. Returns an HTML confirmation page.
       operationId: get-workflows-executions-executionid-resume-external
       parameters:
         - description: Workflow execution ID
@@ -69464,7 +69464,7 @@ paths:
               schema:
                 type: string
           description: HTML confirmation page when the workflow response was accepted
-      summary: Resume a workflow execution from an external link
+      summary: Resume a workflow execution from an external approval link
       tags:
         - workflows
       x-codeSamples:
@@ -69475,6 +69475,121 @@ paths:
         - lang: Console
           source: |
             GET kbn://api/workflows/executions/{executionId}/resume/external?apiKey={encodedApiKey}&approved=true
+      x-state: Generally available; added in 9.4.0
+      x-metaTags:
+        - content: Kibana
+          name: product_name
+    post:
+      description: |-
+        **Spaces method and path for this operation:**
+
+        <div><span class="operation-verb post">post</span>&nbsp;<span class="operation-path">/s/{space_id}/api/workflows/executions/{executionId}/resume/external</span></div>
+
+        Refer to [Spaces](https://www.elastic.co/docs/deploy-manage/manage-spaces) for more information.
+
+        Resume a paused waitForInput step using an external resume API key and submitted form data. Authenticate with an Authorization: ApiKey header or an apiKey query parameter (header takes precedence). Returns an HTML confirmation page.
+      operationId: post-workflows-executions-executionid-resume-external
+      parameters:
+        - description: Workflow execution ID
+          in: path
+          name: executionId
+          required: true
+          schema:
+            type: string
+        - description: External resume API key credential. Used when Authorization header is not provided.
+          in: query
+          name: apiKey
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '200':
+          content:
+            text/html:
+              examples:
+                externalResumeInputSuccessExample:
+                  description: Success page confirming the input was received
+                  value: <!DOCTYPE html><html><body><h1>Thank you</h1><p>Your response was received. You can close this window.</p></body></html>
+              schema:
+                type: string
+          description: HTML confirmation page when the external input was accepted
+      summary: Submit external input for a paused workflow execution
+      tags:
+        - workflows
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X POST "${KIBANA_URL}/api/workflows/executions/{executionId}/resume/external?apiKey=${ENCODED_API_KEY}" \
+              -H "Content-Type: application/json" \
+              -d '{"severity":"high"}'
+        - lang: curl
+          source: |
+            curl \
+              -X POST "${KIBANA_URL}/api/workflows/executions/{executionId}/resume/external" \
+              -H "Authorization: ApiKey ${ENCODED_API_KEY}" \
+              -H "Content-Type: application/json" \
+              -d '{"severity":"high"}'
+        - lang: Console
+          source: |
+            POST kbn://api/workflows/executions/{executionId}/resume/external?apiKey={encodedApiKey}
+            Content-Type: application/json
+
+            {"severity":"high"}
+      x-state: Generally available; added in 9.4.0
+      x-metaTags:
+        - content: Kibana
+          name: product_name
+  /api/workflows/executions/{executionId}/resume/external/form:
+    get:
+      description: |-
+        **Spaces method and path for this operation:**
+
+        <div><span class="operation-verb get">get</span>&nbsp;<span class="operation-path">/s/{space_id}/api/workflows/executions/{executionId}/resume/external/form</span></div>
+
+        Refer to [Spaces](https://www.elastic.co/docs/deploy-manage/manage-spaces) for more information.
+
+        Render an HTML form for submitting external input to a paused waitForInput step. Does not resume the execution.
+      operationId: get-workflows-executions-executionid-resume-external-form
+      parameters:
+        - description: Workflow execution ID
+          in: path
+          name: executionId
+          required: true
+          schema:
+            type: string
+        - description: External resume API key credential.
+          in: query
+          name: apiKey
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            text/html:
+              examples:
+                externalResumeFormExample:
+                  description: Form page for external input submission
+                  value: <!DOCTYPE html><html><body><h1>Submit your response</h1><form method="POST"><button type="submit">Submit</button></form></body></html>
+              schema:
+                type: string
+          description: HTML form page for submitting external input to a paused waitForInput step
+      summary: Show the external input form for a paused workflow execution
+      tags:
+        - workflows
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X GET "${KIBANA_URL}/api/workflows/executions/{executionId}/resume/external/form?apiKey=${ENCODED_API_KEY}"
+        - lang: Console
+          source: |
+            GET kbn://api/workflows/executions/{executionId}/resume/external/form?apiKey={encodedApiKey}
       x-state: Generally available; added in 9.4.0
       x-metaTags:
         - content: Kibana
