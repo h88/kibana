@@ -102,6 +102,7 @@ describe('Execution Routes', () => {
       getStepExecution: jest.fn(),
       resumeWorkflowExecution: jest.fn(),
       resumeWorkflowExecutionExternally: jest.fn(),
+      resumeWorkflowExecutionExternallyViaGet: jest.fn(),
       resumeWorkflowExecutionExternallyWithInput: jest.fn(),
       getExternalResumeFormPage: jest.fn(),
       getChildWorkflowExecutions: jest.fn(),
@@ -749,7 +750,7 @@ describe('Execution Routes', () => {
     });
 
     it('should resume via API key and return HTML', async () => {
-      mockApi.resumeWorkflowExecutionExternally.mockResolvedValue({
+      mockApi.resumeWorkflowExecutionExternallyViaGet.mockResolvedValue({
         resumedBy: 'api_key:api-key-id',
       });
       const h = handler('GET', path)!;
@@ -763,11 +764,14 @@ describe('Execution Routes', () => {
 
       const result = await h(mockContext, request as any, mockResponse as any);
 
-      expect(mockApi.resumeWorkflowExecutionExternally).toHaveBeenCalledWith({
+      expect(mockApi.resumeWorkflowExecutionExternallyViaGet).toHaveBeenCalledWith({
         apiKey: 'encoded-api-key',
-        approved: true,
         executionId: 'ex-1',
         spaceId: 'default',
+        query: {
+          apiKey: 'encoded-api-key',
+          approved: 'true',
+        },
       });
       expect(result).toMatchObject({
         type: 'ok',
@@ -778,7 +782,7 @@ describe('Execution Routes', () => {
     });
 
     it('should return HTML error page when resume fails', async () => {
-      mockApi.resumeWorkflowExecutionExternally.mockRejectedValue(
+      mockApi.resumeWorkflowExecutionExternallyViaGet.mockRejectedValue(
         new ExternalResumeError('Invalid external resume API key', 401)
       );
       const h = handler('GET', path)!;

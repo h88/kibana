@@ -64,10 +64,12 @@ import {
 import type { z } from '@kbn/zod/v4';
 import {
   type ExternalResumeFormPageParams,
+  type ExternalResumeViaGetParams,
   type ExternalResumeWorkflowExecutionParams,
   type ExternalResumeWorkflowExecutionWithInputParams,
   getExternalResumeFormPage,
   resumeWorkflowExecutionExternally,
+  resumeWorkflowExecutionExternallyViaGet,
   resumeWorkflowExecutionExternallyWithInput,
 } from './external_resume/external_resume_service';
 import type { StepExecutionListResult } from './lib/search_step_executions';
@@ -935,6 +937,12 @@ export class WorkflowsManagementApi {
     params: ExternalResumeWorkflowExecutionParams
   ): Promise<ResumeWorkflowExecutionResponseDto> {
     return resumeWorkflowExecutionExternally(this.workflowsService, params);
+  }
+
+  public async resumeWorkflowExecutionExternallyViaGet(
+    params: ExternalResumeViaGetParams
+  ): Promise<ResumeWorkflowExecutionResponseDto> {
+    return resumeWorkflowExecutionExternallyViaGet(this.workflowsService, params);
   }
 
   public async resumeWorkflowExecutionExternallyWithInput(
