@@ -69505,6 +69505,12 @@ paths:
       requestBody:
         content:
           application/json:
+            examples:
+              externalResumeInputRequestExample:
+                description: Example external input payload for a waitForInput step
+                value:
+                  description: Escalated from Slack triage
+                  severity: high
             schema: {}
       responses:
         '200':
