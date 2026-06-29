@@ -69668,8 +69668,10 @@ paths:
                       message: Approve change to production?
                     isTestRun: false
                     output:
-                      approved: true
-                      reason: looks good
+                      respondedBy: alice
+                      response:
+                        approved: true
+                        reason: looks good
                     scopeStack: []
                     spaceId: default
                     startedAt: '2025-11-20T12:00:01.000Z'
@@ -71249,7 +71251,9 @@ paths:
                           message: Approve change to production?
                         isTestRun: false
                         output:
-                          approved: true
+                          respondedBy: alice
+                          response:
+                            approved: true
                         scopeStack: []
                         spaceId: default
                         startedAt: '2025-11-20T12:00:02.000Z'
