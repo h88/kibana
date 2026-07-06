@@ -7,81 +7,28 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { IconType, UseEuiTheme } from '@elastic/eui';
+import type { UseEuiTheme } from '@elastic/eui';
 import { AssistantIcon } from '@kbn/ai-assistant-icon';
 import { i18n } from '@kbn/i18n';
 import { getBuiltInStepDefinition, isDynamicConnector, StepCategory } from '@kbn/workflows';
 import type { WorkflowsExtensionsPublicPluginStart } from '@kbn/workflows-extensions/public';
+import { buildBuiltInTriggerOptions, buildRegisteredTriggerOptions } from './build_trigger_options';
 import { getAllConnectors, isDeprecatedStepType } from '../../../../common/schema';
 import { triggerSchemas } from '../../../trigger_schemas';
-import { getExtensionStability } from '../../../widgets/workflow_yaml_editor/lib/get_stability_note';
 import type { ActionConnectorGroup, ActionGroup, ActionOptionData } from '../types';
 import { isActionGroup } from '../types';
 
-function getBuiltInNestedFlowControlStepOptions(
-  euiTheme: UseEuiTheme['euiTheme']
+export function getActionOptions(
+  euiTheme: UseEuiTheme['euiTheme'],
+  workflowsExtensions: WorkflowsExtensionsPublicPluginStart
 ): ActionOptionData[] {
-  return (['waitForApproval', 'workflow.execute', 'workflow.executeAsync'] as const)
-    .map((stepId) => getBuiltInStepDefinition(stepId))
-    .filter((def): def is NonNullable<typeof def> => def !== undefined)
-    .map((def) => ({
-      id: def.id,
-      label: def.label,
-      description: def.description,
-      iconType: 'nested' as const,
-      iconColor: euiTheme.colors.vis.euiColorVis0,
-      stability: def.stability,
-    }));
-}
-
-function buildTriggersGroup(euiTheme: UseEuiTheme['euiTheme']): ActionOptionData {
-  const builtInTriggerOptions: ActionOptionData[] = [
-    {
-      id: 'manual',
-      label: i18n.translate('workflows.actionsMenu.manual', {
-        defaultMessage: 'Manual',
-      }),
-      description: i18n.translate('workflows.actionsMenu.manualDescription', {
-        defaultMessage: 'Trigger - Manually start from the UI',
-      }),
-      iconType: 'play',
-      iconColor: 'success',
-    },
-    {
-      id: 'alert',
-      label: i18n.translate('workflows.actionsMenu.alert', {
-        defaultMessage: 'Alert',
-      }),
-      description: i18n.translate('workflows.actionsMenu.alertDescription', {
-        defaultMessage: 'Trigger - When an alert from rule is created',
-      }),
-      iconType: 'bell',
-      iconColor: euiTheme.colors.vis.euiColorVis6,
-    },
-    {
-      id: 'scheduled',
-      label: i18n.translate('workflows.actionsMenu.schedule', {
-        defaultMessage: 'Schedule',
-      }),
-      description: i18n.translate('workflows.actionsMenu.scheduleDescription', {
-        defaultMessage: 'Trigger - On a schedule (e.g. every 10 minutes)',
-      }),
-      iconType: 'clock',
-      iconColor: euiTheme.colors.textParagraph,
-    },
-  ];
-  const registeredTriggerOptions: ActionOptionData[] = triggerSchemas
-    .getTriggerDefinitions()
-    .map((t) => ({
-      id: t.id,
-      label: t.title ?? t.id,
-      description: t.description ?? t.id,
-      iconType: (t.icon != null ? t.icon : 'bolt') as IconType,
-      iconColor: euiTheme.colors.vis.euiColorVis6,
-      stability: getExtensionStability(t),
-    }));
-
-  return {
+  const connectors = getAllConnectors();
+  const builtInTriggerOptions = buildBuiltInTriggerOptions(euiTheme);
+  const registeredTriggerOptions = buildRegisteredTriggerOptions(
+    triggerSchemas.getTriggerDefinitions(),
+    euiTheme
+  );
+  const triggersGroup: ActionOptionData = {
     iconType: 'bolt',
     iconColor: euiTheme.colors.vis.euiColorVis6,
     id: 'triggers',
@@ -93,26 +40,6 @@ function buildTriggersGroup(euiTheme: UseEuiTheme['euiTheme']): ActionOptionData
     }),
     options: [...builtInTriggerOptions, ...registeredTriggerOptions],
   };
-}
-
-function mergeNestedStepGroups(stepGroups: Record<StepCategory, ActionGroup>): void {
-  for (const group of Object.values(stepGroups)) {
-    if (group.nestedGroups) {
-      for (const nestedGroup of group.nestedGroups) {
-        if (nestedGroup.options.length > 0) {
-          group.options.unshift(nestedGroup);
-        }
-      }
-    }
-  }
-}
-
-export function getActionOptions(
-  euiTheme: UseEuiTheme['euiTheme'],
-  workflowsExtensions: WorkflowsExtensionsPublicPluginStart
-): ActionOptionData[] {
-  const connectors = getAllConnectors();
-  const triggersGroup = buildTriggersGroup(euiTheme);
 
   const kibanaCasesGroup: ActionGroup = {
     iconType: 'briefcase',
@@ -252,6 +179,18 @@ export function getActionOptions(
         iconColor: euiTheme.colors.vis.euiColorVis0,
       },
       {
+        id: 'parallel',
+        label: i18n.translate('workflows.actionsMenu.parallel', {
+          defaultMessage: 'Parallel',
+        }),
+        description: i18n.translate('workflows.actionsMenu.parallelDescription', {
+          defaultMessage: 'Run branches concurrently and collect their results',
+        }),
+        iconType: 'branch',
+        iconColor: euiTheme.colors.vis.euiColorVis0,
+        stability: getBuiltInStepDefinition('parallel')?.stability,
+      },
+      {
         id: 'wait',
         label: i18n.translate('workflows.actionsMenu.wait', {
           defaultMessage: 'Wait',
@@ -272,9 +211,18 @@ export function getActionOptions(
         }),
         iconType: 'user',
         iconColor: euiTheme.colors.vis.euiColorVis0,
-        stability: getBuiltInStepDefinition('waitForInput')?.stability,
       },
-      ...getBuiltInNestedFlowControlStepOptions(euiTheme),
+      ...(['workflow.execute', 'workflow.executeAsync'] as const)
+        .map((stepId) => getBuiltInStepDefinition(stepId))
+        .filter((def): def is NonNullable<typeof def> => def !== undefined)
+        .map((def) => ({
+          id: def.id,
+          label: def.label,
+          description: def.description,
+          iconType: 'nested' as const,
+          iconColor: euiTheme.colors.vis.euiColorVis0,
+          stability: def.stability,
+        })),
     ],
   };
   const elasticSearchGroup: ActionOptionData = {
@@ -373,7 +321,15 @@ export function getActionOptions(
     }
   }
 
-  mergeNestedStepGroups(stepGroups);
+  for (const group of Object.values(stepGroups)) {
+    if (group.nestedGroups) {
+      for (const nestedGroup of group.nestedGroups) {
+        if (nestedGroup.options.length > 0) {
+          group.options.unshift(nestedGroup);
+        }
+      }
+    }
+  }
 
   const topLevelOptions: ActionOptionData[] = [
     triggersGroup,
