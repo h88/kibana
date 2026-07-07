@@ -71,7 +71,7 @@ export async function resumeWorkflowExecutionExternallyViaGet(
 
   if (stepExecution.stepType === 'waitForApproval') {
     if (!Object.hasOwn(query, 'approved')) {
-      throw new ExternalResumeError('approved query parameter is required', 400);
+      throw new ExternalResumeError('approved query parameter is required', 400, true);
     }
 
     return resumeWorkflowExecutionWithResolvedContext(workflowsService, {
@@ -88,7 +88,8 @@ export async function resumeWorkflowExecutionExternallyViaGet(
     if (Object.keys(queryInput).length === 0) {
       throw new ExternalResumeError(
         'Query-param resume requires at least one schema field; use the form link instead.',
-        400
+        400,
+        true
       );
     }
 
@@ -102,7 +103,7 @@ export async function resumeWorkflowExecutionExternallyViaGet(
     });
   }
 
-  throw new ExternalResumeError('This workflow step does not support external resume', 400);
+  throw new ExternalResumeError('This workflow step does not support external resume', 400, true);
 }
 
 export async function resumeWorkflowExecutionExternallyWithInput(
@@ -119,7 +120,8 @@ export async function resumeWorkflowExecutionExternallyWithInput(
   if (stepExecution.stepType !== 'waitForInput') {
     throw new ExternalResumeError(
       'This workflow step does not accept structured external input',
-      400
+      400,
+      true
     );
   }
 
@@ -146,7 +148,11 @@ export async function getExternalResumeFormPage(
   });
 
   if (stepExecution.stepType !== 'waitForInput') {
-    throw new ExternalResumeError('This workflow step does not expose an external input form', 400);
+    throw new ExternalResumeError(
+      'This workflow step does not expose an external input form',
+      400,
+      true
+    );
   }
 
   const stepInput = getStepInputRecord(stepExecution.input);
@@ -194,7 +200,7 @@ export function parseExternalResumeFormSubmission(
     return validateExternalResumeInput(parsed, schema);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid form submission';
-    throw new ExternalResumeError(message, 400);
+    throw new ExternalResumeError(message, 400, true);
   }
 }
 
@@ -369,7 +375,7 @@ export function parseApprovedQueryParam(value: unknown): boolean {
     return false;
   }
 
-  throw new ExternalResumeError('approved query parameter must be true or false', 400);
+  throw new ExternalResumeError('approved query parameter must be true or false', 400, true);
 }
 
 export function resolveExternalResumeCredentials(query: { token?: string }): { token: string } {

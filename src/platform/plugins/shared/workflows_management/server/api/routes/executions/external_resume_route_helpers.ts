@@ -45,6 +45,14 @@ const EXTERNAL_RESUME_UNEXPECTED_ERROR_MESSAGE = i18n.translate(
   }
 );
 
+const EXTERNAL_RESUME_INVALID_LINK_MESSAGE = i18n.translate(
+  'workflowsManagement.externalResume.invalidLink',
+  {
+    defaultMessage:
+      'This workflow response link is no longer valid. Request a new link from the workflow owner.',
+  }
+);
+
 const EXTERNAL_RESUME_HTML_HEADERS = {
   'content-type': 'text/html; charset=utf-8',
   // Belt-and-suspenders: block script execution if schema-derived markup is ever mishandled.
@@ -64,7 +72,12 @@ export function handleExternalResumeError(
   logger?: Logger
 ) {
   if (error instanceof ExternalResumeError) {
-    return htmlError(response, error.statusCode, error.message);
+    logger?.debug(() => `External resume failed: ${error.message}`);
+    return htmlError(
+      response,
+      error.expose ? error.statusCode : 401,
+      error.expose ? error.message : EXTERNAL_RESUME_INVALID_LINK_MESSAGE
+    );
   }
 
   logger?.debug(

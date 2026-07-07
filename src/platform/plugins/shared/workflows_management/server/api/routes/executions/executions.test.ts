@@ -829,7 +829,7 @@ describe('Execution Routes', () => {
         },
       });
       expect(typeof result.body).toBe('string');
-      expect(result.body).toContain('Unable to submit response');
+      expect(result.body).toContain('This workflow response link is no longer valid');
     });
   });
 
@@ -900,7 +900,6 @@ describe('Execution Routes', () => {
       expect(typeof result.body).toBe('string');
       expect(result.body).toContain('Thank you');
     });
-
   });
 
   describe('GET /api/workflows/executions/{executionId}/children (get_children_executions)', () => {

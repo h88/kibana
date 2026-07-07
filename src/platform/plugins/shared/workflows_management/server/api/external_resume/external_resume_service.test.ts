@@ -145,7 +145,8 @@ describe('external resume service', () => {
     ).rejects.toEqual(
       new ExternalResumeError(
         'Query-param resume requires at least one schema field; use the form link instead.',
-        400
+        400,
+        true
       )
     );
 
@@ -419,7 +420,7 @@ describe('parseApprovedQueryParam', () => {
 
   it('rejects invalid values', () => {
     expect(() => parseApprovedQueryParam('maybe')).toThrow(
-      new ExternalResumeError('approved query parameter must be true or false', 400)
+      new ExternalResumeError('approved query parameter must be true or false', 400, true)
     );
   });
 });
