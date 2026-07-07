@@ -55,6 +55,8 @@ const EXTERNAL_RESUME_INVALID_LINK_MESSAGE = i18n.translate(
 
 const EXTERNAL_RESUME_HTML_HEADERS = {
   'content-type': 'text/html; charset=utf-8',
+  'cache-control': 'no-store',
+  'referrer-policy': 'no-referrer',
   // Belt-and-suspenders: block script execution if schema-derived markup is ever mishandled.
   'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'",
 } as const;

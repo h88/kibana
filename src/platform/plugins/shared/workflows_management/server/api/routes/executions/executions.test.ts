@@ -803,7 +803,11 @@ describe('Execution Routes', () => {
       });
       expect(result).toMatchObject({
         type: 'ok',
-        headers: { 'content-type': 'text/html; charset=utf-8' },
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+          'referrer-policy': 'no-referrer',
+        },
       });
       expect(typeof result.body).toBe('string');
       expect(result.body).toContain('Thank you');
@@ -825,7 +829,11 @@ describe('Execution Routes', () => {
         status: 401,
         options: {
           bypassErrorFormat: true,
-          headers: { 'content-type': 'text/html; charset=utf-8' },
+          headers: {
+            'content-type': 'text/html; charset=utf-8',
+            'cache-control': 'no-store',
+            'referrer-policy': 'no-referrer',
+          },
         },
       });
       expect(typeof result.body).toBe('string');
@@ -860,7 +868,11 @@ describe('Execution Routes', () => {
       });
       expect(result).toMatchObject({
         type: 'ok',
-        headers: { 'content-type': 'text/html; charset=utf-8' },
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+          'referrer-policy': 'no-referrer',
+        },
         body: '<html>form</html>',
       });
     });
@@ -895,7 +907,11 @@ describe('Execution Routes', () => {
       });
       expect(result).toMatchObject({
         type: 'ok',
-        headers: { 'content-type': 'text/html; charset=utf-8' },
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+          'referrer-policy': 'no-referrer',
+        },
       });
       expect(typeof result.body).toBe('string');
       expect(result.body).toContain('Thank you');
