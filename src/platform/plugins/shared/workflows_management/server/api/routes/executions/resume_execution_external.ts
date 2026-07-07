@@ -37,7 +37,11 @@ export function registerExternalResumeExecutionPostRoute(deps: RouteDependencies
       security: EXTERNAL_RESUME_SECURITY,
       summary: 'Submit external input for a paused workflow execution',
       description:
+<<<<<<< HEAD
         'Resume a workflow execution that is paused and waiting for external input. Submit input values as a JSON request body, authenticated with a token query parameter. Returns an HTML confirmation page.',
+=======
+        'Resume a workflow execution that is paused and waiting for external input. Submit input values as a JSON request body, authenticated with either an Authorization: ApiKey header or an apiKey query parameter. Returns an HTML confirmation page.',
+>>>>>>> af6444635eb99254d9f6dc95117b22c9b58ae3dd
       options: EXTERNAL_RESUME_POST_ROUTE_OPTIONS,
     })
     .addVersion(
@@ -100,7 +104,7 @@ export function registerExternalResumeExecutionGetRoute(deps: RouteDependencies)
       security: EXTERNAL_RESUME_SECURITY,
       summary: 'Resume a workflow execution from an external link',
       description:
-        'Resume a paused waitForApproval step (approved query param) or waitForInput step (schema fields as query params). Returns an HTML confirmation page.',
+        'Resume a paused `waitForApproval` step (pauses the workflow and waits for a human to approve/decline before execution continues) or `waitForInput` step (passes the expected input values as query parameters in the URL). Returns an HTML confirmation page.',
       options: EXTERNAL_RESUME_ROUTE_OPTIONS,
     })
     .addVersion(
@@ -115,9 +119,18 @@ export function registerExternalResumeExecutionGetRoute(deps: RouteDependencies)
             params: externalResumeParamsSchema,
             query: schema.object(
               {
+<<<<<<< HEAD
                 token: schema.string({
                   maxLength: 128,
                   meta: { description: 'The resume token authenticating this request.' },
+=======
+                apiKey: schema.string({
+                  maxLength: MAX_HITL_EXTERNAL_RESUME_API_KEY_LENGTH,
+                  meta: {
+                    description:
+                      'The API key created when the workflow execution was paused. Authenticates the request to resume execution.',
+                  },
+>>>>>>> af6444635eb99254d9f6dc95117b22c9b58ae3dd
                 }),
                 approved: schema.maybe(
                   schema.oneOf(
@@ -125,7 +138,11 @@ export function registerExternalResumeExecutionGetRoute(deps: RouteDependencies)
                     {
                       meta: {
                         description:
+<<<<<<< HEAD
                           'Indicates whether a human reviewer approved the paused step. Required for waitForApproval.',
+=======
+                          'Indicates whether a human reviewer approved the paused step. Required for `waitForApproval` when resuming an approval step.',
+>>>>>>> af6444635eb99254d9f6dc95117b22c9b58ae3dd
                       },
                     }
                   )
