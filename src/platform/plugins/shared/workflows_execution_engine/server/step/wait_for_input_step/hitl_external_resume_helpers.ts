@@ -7,8 +7,9 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { createHash, randomBytes } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { HITL_TOKEN_EXPIRES_AT_INPUT_FIELD, HITL_TOKEN_HASH_INPUT_FIELD } from '@kbn/workflows';
+import { computeTokenHmac } from '@kbn/workflows/server';
 import { parseDuration } from '../../utils';
 import type { StepExecutionRuntime } from '../../workflow_context_manager/step_execution_runtime';
 import type { WorkflowExecutionRuntimeManager } from '../../workflow_context_manager/workflow_execution_runtime_manager';
@@ -20,6 +21,8 @@ interface HitlExternalResumeToken {
 }
 
 export function mintHitlExternalResumeToken({
+  stepExecutionRuntime,
+  execution,
   timeout,
 }: {
   stepExecutionRuntime: StepExecutionRuntime;
@@ -27,10 +30,16 @@ export function mintHitlExternalResumeToken({
   timeout: string;
 }): HitlExternalResumeToken {
   const token = randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + parseDuration(timeout)).toISOString();
   return {
     token,
-    tokenHash: createHash('sha256').update(token).digest('hex'),
-    expiresAt: new Date(Date.now() + parseDuration(timeout)).toISOString(),
+    tokenHash: computeTokenHmac(
+      token,
+      execution.id,
+      stepExecutionRuntime.stepExecutionId,
+      expiresAt
+    ),
+    expiresAt,
   };
 }
 

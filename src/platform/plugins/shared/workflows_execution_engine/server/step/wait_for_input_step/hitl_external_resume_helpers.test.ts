@@ -8,6 +8,7 @@
  */
 
 import { HITL_TOKEN_EXPIRES_AT_INPUT_FIELD, HITL_TOKEN_HASH_INPUT_FIELD } from '@kbn/workflows';
+import { computeTokenHmac } from '@kbn/workflows/server';
 import {
   invalidateHitlExternalResumeTokenIfPresent,
   mintHitlExternalResumeToken,
@@ -21,20 +22,60 @@ describe('mintHitlExternalResumeToken', () => {
     try {
       jest.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
 
-      const token = mintHitlExternalResumeToken({
-        stepExecutionRuntime: {} as StepExecutionRuntime,
+      const result = mintHitlExternalResumeToken({
+        stepExecutionRuntime: { stepExecutionId: 'step-exec-1' } as StepExecutionRuntime,
         execution: { id: 'execution-id', workflowId: 'workflow-id' } as Parameters<
           typeof mintHitlExternalResumeToken
         >[0]['execution'],
         timeout: '2w',
       });
 
-      expect(token.token).toHaveLength(64);
-      expect(token.tokenHash).toHaveLength(64);
-      expect(token.expiresAt).toBe('2026-01-15T00:00:00.000Z');
+      expect(result.token).toHaveLength(64);
+      expect(result.tokenHash).toHaveLength(64);
+      expect(result.expiresAt).toBe('2026-01-15T00:00:00.000Z');
     } finally {
       jest.useRealTimers();
     }
+  });
+
+  it('produces an HMAC that binds executionId, stepExecutionId, and expiresAt', () => {
+    jest.useFakeTimers();
+    try {
+      jest.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+
+      const result = mintHitlExternalResumeToken({
+        stepExecutionRuntime: { stepExecutionId: 'step-exec-1' } as StepExecutionRuntime,
+        execution: { id: 'exec-1', workflowId: 'wf-1' } as Parameters<
+          typeof mintHitlExternalResumeToken
+        >[0]['execution'],
+        timeout: '1h',
+      });
+
+      const expectedHmac = computeTokenHmac(
+        result.token,
+        'exec-1',
+        'step-exec-1',
+        result.expiresAt
+      );
+      expect(result.tokenHash).toBe(expectedHmac);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('HMAC changes when executionId differs', () => {
+    const token = 'a'.repeat(64);
+    const expiresAt = '2026-01-01T00:00:00.000Z';
+    const h1 = computeTokenHmac(token, 'exec-1', 'step-1', expiresAt);
+    const h2 = computeTokenHmac(token, 'exec-2', 'step-1', expiresAt);
+    expect(h1).not.toBe(h2);
+  });
+
+  it('HMAC changes when expiresAt differs', () => {
+    const token = 'a'.repeat(64);
+    const h1 = computeTokenHmac(token, 'exec-1', 'step-1', '2026-01-01T00:00:00.000Z');
+    const h2 = computeTokenHmac(token, 'exec-1', 'step-1', '2099-01-01T00:00:00.000Z');
+    expect(h1).not.toBe(h2);
   });
 });
 

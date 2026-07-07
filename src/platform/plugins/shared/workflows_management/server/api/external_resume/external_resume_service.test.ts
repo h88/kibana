@@ -7,7 +7,6 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { createHash } from 'node:crypto';
 import {
   ExecutionStatus,
   HITL_TOKEN_EXPIRES_AT_INPUT_FIELD,
@@ -15,6 +14,7 @@ import {
 } from '@kbn/workflows';
 import type { EsWorkflowStepExecution } from '@kbn/workflows';
 import { WorkflowExecutionInvalidStatusError } from '@kbn/workflows/common/errors';
+import { computeTokenHmac } from '@kbn/workflows/server';
 import type { WorkflowsExecutionEnginePluginStart } from '@kbn/workflows-execution-engine/server';
 import { ExternalResumeError } from './external_resume_error';
 import {
@@ -28,8 +28,10 @@ import {
 import type { WorkflowsService } from '../workflows_management_service';
 
 const TOKEN = 'resume-token';
-const TOKEN_HASH = createHash('sha256').update(TOKEN).digest('hex');
 const FUTURE_DATE = '2999-01-01T00:00:00.000Z';
+const EXEC_ID = 'exec-1';
+const STEP_EXEC_ID = 'step-exec-1';
+const TOKEN_HASH = computeTokenHmac(TOKEN, EXEC_ID, STEP_EXEC_ID, FUTURE_DATE);
 
 function createStepExecution(
   overrides: Partial<EsWorkflowStepExecution> = {}
@@ -284,19 +286,21 @@ describe('external resume service', () => {
   });
 
   it('rejects an expired token', async () => {
+    const expiredDate = '2020-01-01T00:00:00.000Z';
+    const expiredHash = computeTokenHmac(TOKEN, EXEC_ID, STEP_EXEC_ID, expiredDate);
     workflowsService.getStepExecution.mockResolvedValue(
       createStepExecution({
         input: {
-          [HITL_TOKEN_HASH_INPUT_FIELD]: TOKEN_HASH,
-          [HITL_TOKEN_EXPIRES_AT_INPUT_FIELD]: '2020-01-01T00:00:00.000Z',
+          [HITL_TOKEN_HASH_INPUT_FIELD]: expiredHash,
+          [HITL_TOKEN_EXPIRES_AT_INPUT_FIELD]: expiredDate,
         },
       })
     );
 
     await expect(
       resumeWorkflowExecutionExternallyWithInput(workflowsService, {
-        executionId: 'exec-1',
-        stepId: 'step-exec-1',
+        executionId: EXEC_ID,
+        stepId: STEP_EXEC_ID,
         spaceId: 'default',
         token: TOKEN,
         input: { severity: 'high' },

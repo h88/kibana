@@ -7,7 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 import {
   ExecutionStatus,
   HITL_TOKEN_EXPIRES_AT_INPUT_FIELD,
@@ -19,7 +19,7 @@ import {
   WorkflowExecutionInvalidStatusError,
   WorkflowExecutionNotFoundError,
 } from '@kbn/workflows/common/errors';
-import { EXTERNAL_RESUME_API_PATH } from '@kbn/workflows/server';
+import { computeTokenHmac, EXTERNAL_RESUME_API_PATH } from '@kbn/workflows/server';
 import type { JsonModelSchemaType } from '@kbn/workflows/spec/schema/common/json_model_schema';
 import { ExternalResumeError } from './external_resume_error';
 import {
@@ -212,7 +212,10 @@ async function resolveExternalResumeContext(
     spaceId: string;
   }
 ): Promise<ResolvedExternalResumeContext> {
-  const stepExecution = await workflowsService.getStepExecution({ executionId, id: stepId }, spaceId);
+  const stepExecution = await workflowsService.getStepExecution(
+    { executionId, id: stepId },
+    spaceId
+  );
   if (!stepExecution) {
     throw new ExternalResumeError('Workflow execution not found', 404);
   }
@@ -235,7 +238,10 @@ async function resolveExternalResumeContext(
     throw new ExternalResumeError('Invalid resume token', 401);
   }
 
-  const computed = createHash('sha256').update(token).digest();
+  const computed = Buffer.from(
+    computeTokenHmac(token, executionId, stepId, String(expiresAt)),
+    'hex'
+  );
   const stored = Buffer.from(storedHash, 'hex');
   if (computed.length !== stored.length || !timingSafeEqual(computed, stored)) {
     throw new ExternalResumeError('Invalid resume token', 401);
