@@ -25,9 +25,6 @@ export const pemCaTlsSchemaFields = () => ({
     .meta({
       label: i18n.BEARER_WITH_TLS_AUTH_CA_LABEL,
       helpText: i18n.BEARER_WITH_TLS_AUTH_CA_HELP_TEXT,
-      // Do not set widget: 'textarea' — form-generator has no textarea registry
-      // entry (only text/password/select/…). Keep sensitive so caCert stays an
-      // encrypted secret (PasswordWidget) for all shared TLS auth types.
       sensitive: true,
     })
     .optional(),
