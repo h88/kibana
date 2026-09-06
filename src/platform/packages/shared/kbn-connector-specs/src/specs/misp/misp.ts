@@ -213,6 +213,7 @@ export const Misp: ConnectorSpec = {
   actions: {
     searchAttributes: {
       isTool: true,
+      scope: 'read',
       description:
         'Search MISP attributes for an IOC value or type filter. Primary enrichment read during alert triage; returns matching attributes with event context.',
       input: SearchAttributesInputSchema,
@@ -234,6 +235,7 @@ export const Misp: ConnectorSpec = {
 
     searchEvents: {
       isTool: true,
+      scope: 'read',
       description:
         'Search MISP events by indicator, tag, info, or date range. Event-level complement to attribute search for campaign/tag pivots.',
       input: SearchEventsInputSchema,
@@ -263,6 +265,7 @@ export const Misp: ConnectorSpec = {
 
     checkIndicator: {
       isTool: true,
+      scope: 'read',
       description:
         'Reputation-style lookup for one IOC. Returns a verdict (unknown | known | malicious) plus matching attributes. Empty MISP results mean unknown, not clean.',
       input: CheckIndicatorInputSchema,
@@ -334,6 +337,7 @@ export const Misp: ConnectorSpec = {
 
     getEvent: {
       isTool: true,
+      scope: 'read',
       description:
         'Fetch a full MISP event by id or UUID including attributes, tags, and objects — the drill-down after a search hit.',
       input: GetEventInputSchema,
@@ -353,6 +357,7 @@ export const Misp: ConnectorSpec = {
 
     checkWarninglist: {
       isTool: true,
+      scope: 'read',
       description:
         'Check indicator values against enabled MISP warninglists so workflows can drop known-benign IOCs.',
       input: CheckWarninglistInputSchema,
